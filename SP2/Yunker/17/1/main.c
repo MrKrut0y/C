@@ -7,15 +7,30 @@ int main() {
 
     setlocale(LC_ALL, "Russian");
 
-    int m=1+rand()%10;
+    srand(time(NULL));
+
+    int m = 1 + rand() % 3;
+
+    printf("select: 1-stone, 2-paper, 3-scissors\n");
 
     int k; 
     scanf("%d", &k);
 
-    if (k == m) {
-        printf("right");
+    if (k < 1 || k > 3) {
+        printf("incorrect!\n");
+        return 1;
+    }
+
+    if (k == 1 && m == 1) {
+        printf("draw");
+    } 
+
+    else if ((k == 1 && m == 3) || 
+        (k == 2 && m == 1) || 
+        (k == 3 && m == 2) ) {
+            printf("you win");
     } else {
-        printf("not right");
+        printf("you lose");
     }
 
     return 0;
