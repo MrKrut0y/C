@@ -7,7 +7,7 @@
 
 char** init(int size) {
     
-    static char *sports[] = {"golf", "hockey", "foolball", "cricket", "tennis"};
+    static char *sports[] = {"hockey", "football", "cricket", "tennis", "golf"};
 
     char** arr = (char**)malloc(size * sizeof(char*));
 
@@ -32,10 +32,6 @@ void free_arr(char** arr, int size) {
     free(arr);
 }
 
-void change_value(char** arr, int index, const char* new_value) {
-
-    free(arr[index]);
-
-    arr[index-1] = (char*)malloc((strlen(new_value) + 1) * sizeof(char));
-    strcpy(arr[index-1], new_value);
+int compare_str(const void *a, const void *b) {
+    return strcmp(*(char**)a, *(char**)b);
 }
