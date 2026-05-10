@@ -1,13 +1,18 @@
 #include <stdio.h>
 #include <locale.h>
 
-int recurs_func(char n) {
+int recurs_func(char *str, int n) {
 
-    if (n==NULL) return 0;
-
+    if (n < 0) return 0;
     
+    if (*str=='\0' || *str=='\n') return (n == 0);
+    
+    if (*str == '(') return recurs_func(str+1, n+1);
 
-    return ;
+    else if (*str == ')') return recurs_func(str+1, n-1);
+
+    else return recurs_func(str+1, n);
+
 }
 
 int main() {   // Задача "Проверка скобок"	
@@ -18,7 +23,7 @@ int main() {   // Задача "Проверка скобок"
 
     fgets(str, 101, stdin);
 
-    int result = recurs_func(str);
+    int result = recurs_func(str, 0);
 
     if (result) {
         printf("YES");
