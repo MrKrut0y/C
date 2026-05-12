@@ -10,4 +10,8 @@ typedef struct Brick {
     struct Brick* right;
 } Brick;
 
+void showBrickWall(Brick* root, int H);
+Brick* startWallDestroying(Brick* root);
+Brick* startWallBuilding(int H, int K, int L, int M);
+
 #endif /* _LIST_H */
