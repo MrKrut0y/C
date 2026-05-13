@@ -155,16 +155,36 @@ Box* startBoxTransferring(Box* root, int NN, int N, int M) {
         return root;
     }
 
-    if (target->up != NULL) {
-
-    } else {
-        return;
+    Box* top_box = target;
+    while (top_box->up != NULL) {
+        top_box = top_box->up;
     }
 
-    popBox(target);
+    if (top_box != target) {
+        popBox(top_box);
+        pushBox(top_box);
 
+    } else {
+        popBox(top_box);
 
+        if (top_box->left != NULL) {
+            top_box->left->right = top_box->right;
+        }
 
+        if (top_box->right != NULL) {
+            top_box->right->left = top_box->left;
+        }
+
+        if (top_box == root) {
+            root = top_box->right;
+            if (root != NULL) {
+                root->left = NULL;
+            }
+        }
+
+        free(top_box);
+    }
+    
     return root;
 }
 
@@ -187,7 +207,24 @@ Box* findBox(Box* root, int NN) {
     return NULL;
 }
 
-void popBox(Box* target) {
+void popBox(Box* top_box) {
+
+    if (top_box == NULL) return;
+
+    if (top_box->down != NULL) {
+        top_box->down->up = NULL;
+    }
+
+    top_box->down = NULL;
+    top_box->up = NULL;  
+}
+
+void pushBox(Box* top_box) {
+
+
+}
+
+Box* findBestRow(Box* root, Box* box_to_move, int M) {
 
     
 }
