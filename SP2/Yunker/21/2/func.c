@@ -161,8 +161,23 @@ Box* startBoxTransferring(Box* root, int NN, int N, int M) {
     }
 
     if (top_box != target) {
+
+        Box* best_row = findBestRow(root, top_box, M);
+
+        if (best_row == NULL) {
+            printf("no solution\n");
+            return NULL; 
+        }
+
         popBox(top_box);
-        pushBox(top_box);
+        pushBox(top_box, best_row);
+
+        Box* result = startBoxTransferring(root, NN, N, M);
+
+        popBox(top_box);
+        pushBox(top_box, target);
+
+        return result;
 
     } else {
         popBox(top_box);
@@ -219,12 +234,12 @@ void popBox(Box* top_box) {
     top_box->up = NULL;  
 }
 
-void pushBox(Box* top_box) {
+void pushBox(Box* box_to_push, Box* row_base) {
 
 
 }
 
 Box* findBestRow(Box* root, Box* box_to_move, int M) {
 
-    
+
 }
