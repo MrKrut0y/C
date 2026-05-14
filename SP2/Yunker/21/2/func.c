@@ -119,6 +119,11 @@ void showWarehouse(Box* root, int M) {
 
 Box* startEmptyingWarehouse(Box* root) {
 
+    if (root == NULL) {
+        printf("The warehouse is already empty\n");
+        return NULL;
+    }
+
     Box* col_base = root;
 
     while (col_base->right != NULL) {
@@ -147,163 +152,107 @@ Box* startEmptyingWarehouse(Box* root) {
     return NULL;
 }
 
-int startBoxTransferring(Box** root, int NN, int N, int M) {
+int startBoxTransferring(Box** root, int target_id, int N, int M) {
+    Box* target = findBox(*root, target_id);
+    if (!target) return 0;
 
-    Box* target = findBox(*root, NN);
+    Box* top_in_col = target;
+    while (top_in_col->up) top_in_col = top_in_col->up;
 
-    if (target == NULL) {
-        printf("no solution\n");
-        return 0;
-    }
+    if (top_in_col != target) {
+        Box* best_row = findBestRow(*root, top_in_col, M);
+        if (!best_row) return 0;
 
-    Box* top_box = target;
-    while (top_box->up != NULL) {
-        top_box = top_box->up;
-    }
+        Box* base = target;
+        while (base->down) base = base->down;
+        int base_id = base->id;
 
-    if (top_box != target) {
+        popBox(top_in_col, root);
+        pushBox(top_in_col, best_row);
 
-        Box* best_row = findBestRow(*root, top_box, M);
+        int res = startBoxTransferring(root, target_id, N, M);
 
-        if (best_row == NULL) {
-            return 0;
+        Box* original_col = findBox(*root, base_id);
+        if (original_col) {
+            while (original_col->down) original_col = original_col->down;
+            popBox(top_in_col, root);
+            pushBox(top_in_col, original_col);
         }
-
-        Box* original_row_base = target;
-        while (original_row_base->down != NULL) {
-            original_row_base = original_row_base->down;
-        }
-
-        popBox(top_box);
-        pushBox(top_box, best_row);
-
-        int result = startBoxTransferring(root, NN, N, M);
-
-        popBox(top_box);
-        pushBox(top_box, original_row_base);
-
-        if (result == 0) {
-            return 0;
-        }
-        
-        return 1;
-
+        return res;
     } else {
-        popBox(top_box);
-
-        if (top_box->left != NULL) {
-            top_box->left->right = top_box->right;
-        }
-
-        if (top_box->right != NULL) {
-            top_box->right->left = top_box->left;
-        }
-
-        if (top_box == *root) {
-            *root = top_box->right;
-            if (*root != NULL) {
-                (*root)->left = NULL;
-            }
-        }
-
-        free(top_box);
-        printf("Box %04d extracted successfully\n", NN);
+        popBox(target, root);
+        free(target);
+        return 1;
     }
-    
-    return 1;
 }
 
-Box* findBox(Box* root, int NN) {
-
-    Box* col_base = root;
-
-    while (col_base != NULL) {
-        Box* current = col_base;
-        
-        while (current != NULL) {
-            if (current->id == NN) {
-                return current;
-            }
-            current = current->up;
+Box* findBox(Box* root, int id) {
+    Box* col = root;
+    while (col) {
+        Box* curr = col;
+        while (curr) {
+            if (curr->id == id) return curr;
+            curr = curr->up;
         }
-        col_base = col_base->right;
+        col = col->right;
     }
     return NULL;
 }
 
-void popBox(Box* top_box) {
+void popBox(Box* b, Box** root) {
+    if (!b) return;
 
-    if (top_box == NULL) return;
+    if (b->up) b->up->down = b->down;
+    if (b->down) b->down->up = b->up;
 
-    if (top_box->down != NULL) {
-        top_box->down->up = NULL;
+    if (b->left) b->left->right = b->right;
+    if (b->right) b->right->left = b->left;
+
+    if (b == *root) {
+        if (b->up) {
+            *root = b->up;
+            if (b->right) { b->up->right = b->right; b->right->left = b->up; }
+        } else {
+            *root = b->right;
+        }
     }
 
-    top_box->down = NULL;
-    top_box->up = NULL;  
-    top_box->left = NULL;
-    top_box->right = NULL;
+    b->up = b->down = b->left = b->right = NULL;
 }
 
-void pushBox(Box* box_to_push, Box* row_base) {
+void pushBox(Box* b, Box* row_base) {
+    if (!b || !row_base) return;
 
-    if (box_to_push == NULL || row_base == NULL) return;
+    Box* top = row_base;
+    while (top->up) top = top->up;
 
-    Box* current = row_base;
+    top->up = b;
+    b->down = top;
 
-    while (current->up != NULL) {
-        current = current->up;
+    if (top->left && top->left->up) {
+        b->left = top->left->up;
+        top->left->up->right = b;
     }
-
-    current->up = box_to_push;
-    box_to_push->down = current;
-    box_to_push->up = NULL;
-
-    if (current->left != NULL && current->left->up != NULL) {
-        box_to_push->left = current->left->up;
-        current->left->up->right = box_to_push;
-    }
-    if (current->right != NULL && current->right->up != NULL) {
-        box_to_push->right = current->right->up;
-        current->right->up->left = box_to_push;
+    if (top->right && top->right->up) {
+        b->right = top->right->up;
+        top->right->up->left = b;
     }
 }
 
-Box* findBestRow(Box* root, Box* box_to_move, int M) {
+Box* findBestRow(Box* root, Box* to_move, int M) {
+    Box* col = root;
+    while (col) {
+        Box* temp = to_move;
+        while (temp->down) temp = temp->down;
+        if (temp == col) { col = col->right; continue; }
 
-    Box* col_base = root;
+        int h = 0;
+        Box* curr = col;
+        while (curr) { h++; curr = curr->up; }
 
-    while (col_base != NULL) {
-
-
-        Box* check_own = col_base;
-        int is_own_row = 0;
-        while (check_own != NULL) {
-            if (check_own == box_to_move) {
-                is_own_row = 1;
-                break;
-            }
-            check_own = check_own->up;
-        }
-
-        if (is_own_row) {
-            col_base = col_base->right;
-            continue;
-        }
-
-        Box* current = col_base;
-        int height = 0;
-        char row_type = col_base->type;
-
-        while (current != NULL) {
-            height++;
-            current = current->up;
-        }
-
-        if (height < M && row_type == box_to_move->type) {
-            return col_base;
-        }
-        col_base = col_base->right;
+        if (h < M && col->type == to_move->type) return col;
+        
+        col = col->right;
     }
     return NULL;
 }
