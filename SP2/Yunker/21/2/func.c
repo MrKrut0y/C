@@ -147,12 +147,13 @@ Box* startEmptyingWarehouse(Box* root) {
     return NULL;
 }
 
-Box* startBoxTransferring(Box* root, int NN, int N, int M) {
+int startBoxTransferring(Box** root, int NN, int N, int M) {
 
-    Box* target = findBox(root, NN);
+    Box* target = findBox(*root, NN);
 
     if (target == NULL) {
-        return root;
+        printf("no solution\n");
+        return 0;
     }
 
     Box* top_box = target;
@@ -162,22 +163,30 @@ Box* startBoxTransferring(Box* root, int NN, int N, int M) {
 
     if (top_box != target) {
 
-        Box* best_row = findBestRow(root, top_box, M);
+        Box* best_row = findBestRow(*root, top_box, M);
 
         if (best_row == NULL) {
-            printf("no solution\n");
-            return NULL; 
+            return 0;
+        }
+
+        Box* original_row_base = target;
+        while (original_row_base->down != NULL) {
+            original_row_base = original_row_base->down;
         }
 
         popBox(top_box);
         pushBox(top_box, best_row);
 
-        Box* result = startBoxTransferring(root, NN, N, M);
+        int result = startBoxTransferring(root, NN, N, M);
 
         popBox(top_box);
-        pushBox(top_box, target);
+        pushBox(top_box, original_row_base);
 
-        return result;
+        if (result == 0) {
+            return 0;
+        }
+        
+        return 1;
 
     } else {
         popBox(top_box);
@@ -190,17 +199,18 @@ Box* startBoxTransferring(Box* root, int NN, int N, int M) {
             top_box->right->left = top_box->left;
         }
 
-        if (top_box == root) {
-            root = top_box->right;
-            if (root != NULL) {
-                root->left = NULL;
+        if (top_box == *root) {
+            *root = top_box->right;
+            if (*root != NULL) {
+                (*root)->left = NULL;
             }
         }
 
         free(top_box);
+        printf("Box %04d extracted successfully\n", NN);
     }
     
-    return root;
+    return 1;
 }
 
 Box* findBox(Box* root, int NN) {
@@ -218,7 +228,6 @@ Box* findBox(Box* root, int NN) {
         }
         col_base = col_base->right;
     }
-    printf("no solution");
     return NULL;
 }
 
@@ -232,14 +241,69 @@ void popBox(Box* top_box) {
 
     top_box->down = NULL;
     top_box->up = NULL;  
+    top_box->left = NULL;
+    top_box->right = NULL;
 }
 
 void pushBox(Box* box_to_push, Box* row_base) {
 
+    if (box_to_push == NULL || row_base == NULL) return;
 
+    Box* current = row_base;
+
+    while (current->up != NULL) {
+        current = current->up;
+    }
+
+    current->up = box_to_push;
+    box_to_push->down = current;
+    box_to_push->up = NULL;
+
+    if (current->left != NULL && current->left->up != NULL) {
+        box_to_push->left = current->left->up;
+        current->left->up->right = box_to_push;
+    }
+    if (current->right != NULL && current->right->up != NULL) {
+        box_to_push->right = current->right->up;
+        current->right->up->left = box_to_push;
+    }
 }
 
 Box* findBestRow(Box* root, Box* box_to_move, int M) {
 
+    Box* col_base = root;
 
+    while (col_base != NULL) {
+
+
+        Box* check_own = col_base;
+        int is_own_row = 0;
+        while (check_own != NULL) {
+            if (check_own == box_to_move) {
+                is_own_row = 1;
+                break;
+            }
+            check_own = check_own->up;
+        }
+
+        if (is_own_row) {
+            col_base = col_base->right;
+            continue;
+        }
+
+        Box* current = col_base;
+        int height = 0;
+        char row_type = col_base->type;
+
+        while (current != NULL) {
+            height++;
+            current = current->up;
+        }
+
+        if (height < M && row_type == box_to_move->type) {
+            return col_base;
+        }
+        col_base = col_base->right;
+    }
+    return NULL;
 }

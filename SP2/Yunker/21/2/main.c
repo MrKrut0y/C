@@ -19,12 +19,13 @@ int main() {
 
     Box* root = startFillingWarehouse(NN, N, M);
 
-    printf("\ntrying to print a warehouse");
     showWarehouse(root, M);
 
-    Box* root = startBoxTransferring(root, NN, N, M);
+    if (startBoxTransferring(&root, NN, N, M) == 0) {
+        printf("no solution\n");
+    }
 
-    printf("\ntrying to print a warehouse\n");
+    printf("\nWarehouse after transferring:\n");
     showWarehouse(root, M);
 
     root = startEmptyingWarehouse(root);
