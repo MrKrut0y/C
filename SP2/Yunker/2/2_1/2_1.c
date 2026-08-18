@@ -17,7 +17,7 @@ int main() {
 
     int x;
 
-    printf("¬ведите число \n");
+    printf("??????? ????? \n");
     scanf("%d", &x);
 
     sum_digits(&x);

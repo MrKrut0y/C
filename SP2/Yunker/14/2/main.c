@@ -13,7 +13,7 @@ int main() {         // 7
     initlist(&my_list);
 
     for (int i=0; i<N; i++) {
-        int x = rand() % 199 - 99;
+        int x = rand() % 199 - 99; // -99 99
         insertfront(&my_list, x);
     }
     

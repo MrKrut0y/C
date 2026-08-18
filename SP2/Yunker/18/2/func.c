@@ -12,7 +12,7 @@ char** init(int size) {
     char** arr = (char**)malloc(size * sizeof(char*));
 
     for (int i=0; i<size; i++) {
-        arr[i] = (char*)malloc(strlen((sports[i % N])+1)* sizeof(char));
+        arr[i] = (char*)malloc((strlen(sports[i % N])+1)* sizeof(char));
         strcpy(arr[i], sports[i%N]);
     }
 

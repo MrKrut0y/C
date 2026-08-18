@@ -8,7 +8,7 @@ int main() {
 
     setlocale(LC_ALL, "Russian");
 
-    double * ptr_array;
+    double *ptr_array;
     int size;
 
     printf("¬ведите размер массива > ");

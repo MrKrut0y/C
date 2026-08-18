@@ -8,7 +8,7 @@ double* full_elements(double *ptr_array, int n) {
     srand(time(NULL));
 
     for (int i=0;i<n;i++) {
-        ptr_array[i] = (double)((rand() % 201) - 100) / 100.0;
+        ptr_array[i] = (double)((rand() % 201) - 100) / 100.0; // от -1.00 до 1.00
     }
 
     return ptr_array;
